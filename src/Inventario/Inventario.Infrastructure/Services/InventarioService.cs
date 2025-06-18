@@ -19,6 +19,17 @@ namespace Inventario.Infrastructure.Services
 
         public async Task<int> CrearInventarioAsync(InventarioDto dto)
         {
+            // Validar existencia del producto
+            var producto = await _productoApi.ObtenerProductoPorIdAsync(dto.ProductoId);
+            if (producto == null)
+                throw new InvalidOperationException("El producto no existe.");
+
+            var existente = await _context.Inventarios
+                .AnyAsync(i => i.ProductoId == dto.ProductoId);
+
+            if (existente)
+                throw new InvalidOperationException("Ya existe inventario para este producto.");
+
             var inventario = new InventarioEntity
             {
                 ProductoId = dto.ProductoId,
@@ -30,6 +41,7 @@ namespace Inventario.Infrastructure.Services
             await _context.SaveChangesAsync();
             return inventario.Id;
         }
+
 
         public async Task<InventarioDto?> ObtenerInventarioPorProductoIdAsync(int productoId)
         {
@@ -46,10 +58,11 @@ namespace Inventario.Infrastructure.Services
         public async Task<List<InventarioDto>> ListarAsync()
         {
             return await _context.Inventarios
-                .Select(i => new InventarioDto
+                .GroupBy(i => i.ProductoId)
+                .Select(g => new InventarioDto
                 {
-                    ProductoId = i.ProductoId,
-                    Cantidad = i.Cantidad
+                    ProductoId = g.Key,
+                    Cantidad = g.Sum(x => x.Cantidad)
                 })
                 .ToListAsync();
         }

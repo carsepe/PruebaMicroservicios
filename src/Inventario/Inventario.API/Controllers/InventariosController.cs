@@ -16,11 +16,31 @@ namespace Inventario.API.Controllers
         }
 
         [HttpPost]
+        [HttpPost]
         public async Task<IActionResult> Crear([FromBody] InventarioDto dto)
         {
-            var id = await _inventarioService.CrearInventarioAsync(dto);
-            return Ok(id);
+            try
+            {
+                var id = await _inventarioService.CrearInventarioAsync(dto);
+                return Ok(new { id });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new
+                {
+                    error = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    error = "Ocurrió un error inesperado.",
+                    detalle = ex.Message
+                });
+            }
         }
+
 
         [HttpGet("{productoId}")]
         public async Task<IActionResult> ObtenerPorProducto(int productoId)
@@ -35,20 +55,6 @@ namespace Inventario.API.Controllers
         {
             var inventarios = await _inventarioService.ListarAsync();
             return Ok(inventarios);
-        }
-
-        [HttpPost("comprar")]
-        public async Task<IActionResult> Comprar([FromBody] CompraDto dto)
-        {
-            var resultado = await _inventarioService.ProcesarCompraAsync(dto);
-            return Ok(new
-            {
-                data = new
-                {
-                    type = "compra",
-                    attributes = resultado
-                }
-            });
         }
 
     }

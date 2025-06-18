@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Net;
+using System.Net.Http.Json;
 using Inventario.Application.DTOs;
 using Inventario.Application.Interfaces;
 
@@ -15,7 +16,15 @@ namespace Inventario.Infrastructure.Services
 
         public async Task<ProductoDto?> ObtenerProductoPorIdAsync(int productoId)
         {
-            return await _httpClient.GetFromJsonAsync<ProductoDto>($"/productos/{productoId}");
+            var response = await _httpClient.GetAsync($"/productos/{productoId}");
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+                return null;
+
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadFromJsonAsync<ProductoDto>();
         }
+
     }
 }

@@ -10,5 +10,10 @@ public class InventarioDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<InventarioEntity>().ToTable("Inventarios");
+
+        modelBuilder.Entity<InventarioEntity>()
+            .HasIndex(i => i.ProductoId)
+            .IsUnique();
     }
+
 }
