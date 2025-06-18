@@ -1,8 +1,8 @@
 ﻿using Producto.Application.DTOs;
-using Producto.Application.Interfaces;
-using ProductoEntity = Producto.Domain.Entities.Producto;
 using Producto.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using ProductoEntity = Producto.Domain.Entities.Producto;
+using Producto.Application.Interfaces;
 
 namespace Producto.Infrastructure.Services
 {
@@ -15,7 +15,48 @@ namespace Producto.Infrastructure.Services
             _context = context;
         }
 
-        public async Task<int> CrearProductoAsync(ProductoDto dto)
+        public async Task<List<ProductoDto>> ListarAsync(bool? esActivo = null)
+        {
+            var query = _context.Productos.AsQueryable();
+
+            if (esActivo.HasValue)
+                query = query.Where(p => p.EsActivo == esActivo.Value);
+
+            return await query
+                .Select(p => new ProductoDto
+                {
+                    Id = p.Id,
+                    Nombre = p.Nombre,
+                    Precio = p.Precio,
+                    Descripcion = p.Descripcion,
+                    EsActivo = p.EsActivo
+                })
+                .ToListAsync();
+        }
+
+        public async Task<ProductoDto?> ObtenerPorIdAsync(int id, bool? esActivo = null)
+        {
+            var query = _context.Productos.AsQueryable();
+
+            if (esActivo.HasValue)
+                query = query.Where(p => p.EsActivo == esActivo.Value);
+
+            var producto = await query.FirstOrDefaultAsync(p => p.Id == id);
+
+            if (producto == null) return null;
+
+            return new ProductoDto
+            {
+                Id = producto.Id,
+                Nombre = producto.Nombre,
+                Precio = producto.Precio,
+                Descripcion = producto.Descripcion,
+                EsActivo = producto.EsActivo
+            };
+        }
+
+
+        public async Task<int> CrearAsync(ProductoDto dto)
         {
             var producto = new ProductoEntity
             {
@@ -25,36 +66,45 @@ namespace Producto.Infrastructure.Services
             };
 
             _context.Productos.Add(producto);
-
-
-            _context.Productos.Add(producto);
             await _context.SaveChangesAsync();
             return producto.Id;
         }
 
-        public async Task<ProductoDto?> ObtenerProductoPorIdAsync(int id)
+        public async Task<bool> ActualizarAsync(ProductoDto dto)
         {
-            var producto = await _context.Productos.FirstOrDefaultAsync(p => p.Id == id);
-            if (producto == null) return null;
+            var producto = await _context.Productos.FirstOrDefaultAsync(p => p.Id == dto.Id && p.EsActivo);
+            if (producto == null) return false;
 
-            return new ProductoDto
-            {
-                Nombre = producto.Nombre,
-                Precio = producto.Precio,
-                Descripcion = producto.Descripcion
-            };
-        }
-        public async Task<List<ProductoDto>> ListarAsync()
-        {
-            return await _context.Productos
-                .Select(p => new ProductoDto
-                {
-                    Nombre = p.Nombre,
-                    Precio = p.Precio,
-                    Descripcion = p.Descripcion
-                })
-                .ToListAsync();
+            producto.Nombre = dto.Nombre;
+            producto.Precio = dto.Precio;
+            producto.Descripcion = dto.Descripcion;
+
+            _context.Productos.Update(producto);
+            await _context.SaveChangesAsync();
+            return true;
         }
 
+        public async Task<bool> InactivarAsync(int id)
+        {
+            var producto = await _context.Productos.FirstOrDefaultAsync(p => p.Id == id && p.EsActivo);
+            if (producto == null) return false;
+
+            producto.EsActivo = false;
+            _context.Productos.Update(producto);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+
+        public async Task<bool> EliminarAsync(int id)
+        {
+            var producto = await _context.Productos.FirstOrDefaultAsync(p => p.Id == id && p.EsActivo);
+            if (producto == null) return false;
+
+            producto.EsActivo = false;
+            _context.Productos.Update(producto);
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

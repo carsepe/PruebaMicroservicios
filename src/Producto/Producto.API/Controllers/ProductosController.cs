@@ -15,29 +15,57 @@ namespace Producto.API.Controllers
             _productoService = productoService;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Crear([FromBody] ProductoDto dto)
-        {
-            var id = await _productoService.CrearProductoAsync(dto);
-            return CreatedAtAction(nameof(ObtenerPorId), new { id }, dto);
-        }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> ObtenerPorId(int id)
-        {
-            var producto = await _productoService.ObtenerProductoPorIdAsync(id);
-            if (producto == null)
-                return NotFound();
-
-            return Ok(producto);
-        }
-
         [HttpGet]
-        public async Task<IActionResult> Listar()
+        public async Task<IActionResult> Listar([FromQuery] bool? esActivo)
         {
-            var productos = await _productoService.ListarAsync();
+            var productos = await _productoService.ListarAsync(esActivo);
             return Ok(productos);
         }
 
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Obtener(int id, [FromQuery] bool? esActivo)
+        {
+            var producto = await _productoService.ObtenerPorIdAsync(id, esActivo);
+            if (producto == null) return NotFound();
+            return Ok(producto);
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> Crear([FromBody] ProductoDto dto)
+        {
+            var id = await _productoService.CrearAsync(dto);
+            return Ok(id);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Actualizar(int id, [FromBody] ProductoDto dto)
+        {
+            if (id != dto.Id) return BadRequest("El ID no coincide");
+
+            var actualizado = await _productoService.ActualizarAsync(dto);
+            if (!actualizado) return NotFound();
+
+            return Ok();
+        }
+
+        [HttpPatch("{id}/inactivar")]
+        public async Task<IActionResult> Inactivar(int id)
+        {
+            var result = await _productoService.InactivarAsync(id);
+            if (!result) return NotFound();
+            return NoContent();
+        }
+
+
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Eliminar(int id)
+        {
+            var eliminado = await _productoService.EliminarAsync(id);
+            if (!eliminado) return NotFound();
+            return Ok();
+        }
     }
 }
