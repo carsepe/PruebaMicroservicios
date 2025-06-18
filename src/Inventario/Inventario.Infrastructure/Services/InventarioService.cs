@@ -22,7 +22,7 @@ namespace Inventario.Infrastructure.Services
             if (producto == null)
                 throw new InvalidOperationException("El producto no existe.");
 
-            if (producto.EsActivo == false)
+            if (!producto.EsActivo)
                 throw new InvalidOperationException("No se puede crear inventario para un producto inactivo.");
 
             var existente = await _context.Inventarios
@@ -43,7 +43,37 @@ namespace Inventario.Infrastructure.Services
             await _context.SaveChangesAsync();
             return inventario.Id;
         }
+        public async Task<List<InventarioDto>> ListarAsync(bool? esActivo = null)
+        {
+            var query = _context.Inventarios.AsQueryable();
 
+            if (esActivo.HasValue)
+                query = query.Where(i => i.EsActivo == esActivo.Value);
+
+            return await query.Select(i => new InventarioDto
+            {
+                ProductoId = i.ProductoId,
+                Cantidad = i.Cantidad,
+                EsActivo = i.EsActivo
+            }).ToListAsync();
+        }
+        public async Task<InventarioDto?> ObtenerInventarioPorProductoIdAsync(int productoId, bool? esActivo = null)
+        {
+            var query = _context.Inventarios.AsQueryable();
+
+            if (esActivo.HasValue)
+                query = query.Where(i => i.EsActivo == esActivo.Value);
+
+            var inventario = await query.FirstOrDefaultAsync(i => i.ProductoId == productoId);
+            if (inventario == null) return null;
+
+            return new InventarioDto
+            {
+                ProductoId = inventario.ProductoId,
+                Cantidad = inventario.Cantidad,
+                EsActivo = inventario.EsActivo
+            };
+        }
 
         public async Task<bool> ActualizarAsync(InventarioDto dto)
         {
@@ -64,41 +94,10 @@ namespace Inventario.Infrastructure.Services
             return true;
         }
 
-
-        public async Task<InventarioDto?> ObtenerInventarioPorProductoIdAsync(int productoId, bool? esActivo = null)
-        {
-            var query = _context.Inventarios.AsQueryable();
-            if (esActivo.HasValue)
-                query = query.Where(i => i.EsActivo == esActivo.Value);
-
-            var inventario = await query.FirstOrDefaultAsync(i => i.ProductoId == productoId);
-            if (inventario == null) return null;
-
-            return new InventarioDto
-            {
-                ProductoId = inventario.ProductoId,
-                Cantidad = inventario.Cantidad,
-                EsActivo = inventario.EsActivo
-            };
-        }
-
-        public async Task<List<InventarioDto>> ListarAsync(bool? esActivo = null)
-        {
-            var query = _context.Inventarios.AsQueryable();
-            if (esActivo.HasValue)
-                query = query.Where(i => i.EsActivo == esActivo.Value);
-
-            return await query.Select(i => new InventarioDto
-            {
-                ProductoId = i.ProductoId,
-                Cantidad = i.Cantidad,
-                EsActivo = i.EsActivo
-            }).ToListAsync();
-        }
-
         public async Task<bool> ActualizarEstadoAsync(int id, bool esActivo)
         {
             var inventario = await _context.Inventarios.FirstOrDefaultAsync(i => i.Id == id);
+
             if (inventario == null)
                 throw new InvalidOperationException("El inventario no existe.");
 
@@ -108,30 +107,6 @@ namespace Inventario.Infrastructure.Services
             inventario.EsActivo = esActivo;
             await _context.SaveChangesAsync();
             return true;
-        }
-
-
-
-        public async Task<CompraResultadoDto> ProcesarCompraAsync(CompraDto dto)
-        {
-            var producto = await _productoApi.ObtenerProductoPorIdAsync(dto.ProductoId);
-            if (producto == null)
-                return new CompraResultadoDto { Exito = false, Mensaje = "Producto no encontrado." };
-
-            var inventario = await _context.Inventarios
-                .FirstOrDefaultAsync(i => i.ProductoId == dto.ProductoId && i.EsActivo);
-
-            if (inventario == null)
-                return new CompraResultadoDto { Exito = false, Mensaje = "Inventario no encontrado." };
-
-            if (inventario.Cantidad < dto.Cantidad)
-                return new CompraResultadoDto { Exito = false, Mensaje = "Stock insuficiente." };
-
-            inventario.Cantidad -= dto.Cantidad;
-            inventario.FechaActualizacion = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
-
-            return new CompraResultadoDto { Exito = true, Mensaje = "Compra procesada correctamente." };
         }
     }
 }

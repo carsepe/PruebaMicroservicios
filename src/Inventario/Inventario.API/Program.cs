@@ -8,6 +8,8 @@ builder.Services.AddDbContext<InventarioDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IInventarioService, InventarioService>();
+builder.Services.AddScoped<ICompraService, CompraService>();
+
 
 builder.Services.AddHttpClient<IProductoApiClient, ProductoApiClient>(client =>
 {

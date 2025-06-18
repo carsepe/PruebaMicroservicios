@@ -8,11 +8,11 @@ namespace Inventario.API.Controllers
     [Route("[controller]")]
     public class ComprasController : ControllerBase
     {
-        private readonly IInventarioService _inventarioService;
+        private readonly ICompraService _compraService;
 
-        public ComprasController(IInventarioService inventarioService)
+        public ComprasController(ICompraService compraService)
         {
-            _inventarioService = inventarioService;
+            _compraService = compraService;
         }
 
         [HttpPost]
@@ -20,16 +20,30 @@ namespace Inventario.API.Controllers
         {
             try
             {
-                var resultado = await _inventarioService.ProcesarCompraAsync(dto);
+                var resultado = await _compraService.ProcesarCompraAsync(dto);
 
                 if (!resultado.Exito)
-                    return BadRequest(new { error = resultado.Mensaje });
+                {
+                    return BadRequest(new
+                    {
+                        errors = new[]
+                        {
+                            new
+                            {
+                                status = "400",
+                                title = "Compra no válida",
+                                detail = resultado.Mensaje
+                            }
+                        }
+                    });
+                }
 
                 return Ok(new
                 {
                     data = new
                     {
-                        type = "compra",
+                        type = "compras",
+                        id = Guid.NewGuid().ToString(),
                         attributes = new
                         {
                             exito = resultado.Exito,
@@ -42,8 +56,15 @@ namespace Inventario.API.Controllers
             {
                 return StatusCode(500, new
                 {
-                    error = "Ocurrió un error inesperado.",
-                    detalle = ex.Message
+                    errors = new[]
+                    {
+                        new
+                        {
+                            status = "500",
+                            title = "Error interno",
+                            detail = ex.Message
+                        }
+                    }
                 });
             }
         }

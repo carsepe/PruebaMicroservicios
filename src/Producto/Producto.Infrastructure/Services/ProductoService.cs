@@ -15,6 +15,19 @@ namespace Producto.Infrastructure.Services
             _context = context;
         }
 
+        public async Task<int> CrearAsync(ProductoDto dto)
+        {
+            var producto = new ProductoEntity
+            {
+                Nombre = dto.Nombre,
+                Precio = dto.Precio,
+                Descripcion = dto.Descripcion
+            };
+
+            _context.Productos.Add(producto);
+            await _context.SaveChangesAsync();
+            return producto.Id;
+        }
         public async Task<List<ProductoDto>> ListarAsync(bool? esActivo = null)
         {
             var query = _context.Productos.AsQueryable();
@@ -42,7 +55,6 @@ namespace Producto.Infrastructure.Services
                 query = query.Where(p => p.EsActivo == esActivo.Value);
 
             var producto = await query.FirstOrDefaultAsync(p => p.Id == id);
-
             if (producto == null) return null;
 
             return new ProductoDto
@@ -53,21 +65,6 @@ namespace Producto.Infrastructure.Services
                 Descripcion = producto.Descripcion,
                 EsActivo = producto.EsActivo
             };
-        }
-
-
-        public async Task<int> CrearAsync(ProductoDto dto)
-        {
-            var producto = new ProductoEntity
-            {
-                Nombre = dto.Nombre,
-                Precio = dto.Precio,
-                Descripcion = dto.Descripcion
-            };
-
-            _context.Productos.Add(producto);
-            await _context.SaveChangesAsync();
-            return producto.Id;
         }
 
         public async Task<bool> ActualizarAsync(ProductoDto dto)
@@ -90,11 +87,10 @@ namespace Producto.Infrastructure.Services
             return true;
         }
 
-
-
         public async Task<bool> ActualizarEstadoAsync(int id, bool esActivo)
         {
             var producto = await _context.Productos.FirstOrDefaultAsync(p => p.Id == id);
+
             if (producto == null)
                 throw new InvalidOperationException("El producto no existe.");
 
@@ -105,7 +101,5 @@ namespace Producto.Infrastructure.Services
             await _context.SaveChangesAsync();
             return true;
         }
-
-
     }
 }
