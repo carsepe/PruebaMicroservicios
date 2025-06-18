@@ -9,6 +9,5 @@ namespace Producto.Application.Interfaces
         Task<int> CrearAsync(ProductoDto dto);
         Task<bool> ActualizarAsync(ProductoDto dto);
         Task<bool> InactivarAsync(int id);
-        Task<bool> EliminarAsync(int id);
     }
 }

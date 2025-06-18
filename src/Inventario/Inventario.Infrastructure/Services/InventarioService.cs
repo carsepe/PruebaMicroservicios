@@ -10,16 +10,14 @@ namespace Inventario.Infrastructure.Services
         private readonly InventarioDbContext _context;
         private readonly IProductoApiClient _productoApi;
 
-
         public InventarioService(InventarioDbContext context, IProductoApiClient productoApi)
         {
             _context = context;
             _productoApi = productoApi;
         }
 
-        public async Task<int> CrearInventarioAsync(InventarioDto dto)
+        public async Task<int> CrearAsync(InventarioDto dto)
         {
-            // Validar existencia del producto
             var producto = await _productoApi.ObtenerProductoPorIdAsync(dto.ProductoId);
             if (producto == null)
                 throw new InvalidOperationException("El producto no existe.");
@@ -34,7 +32,8 @@ namespace Inventario.Infrastructure.Services
             {
                 ProductoId = dto.ProductoId,
                 Cantidad = dto.Cantidad,
-                FechaActualizacion = DateTime.UtcNow
+                FechaActualizacion = DateTime.UtcNow,
+                EsActivo = true
             };
 
             _context.Inventarios.Add(inventario);
@@ -42,29 +41,65 @@ namespace Inventario.Infrastructure.Services
             return inventario.Id;
         }
 
-
-        public async Task<InventarioDto?> ObtenerInventarioPorProductoIdAsync(int productoId)
+        public async Task<bool> ActualizarAsync(InventarioDto dto)
         {
-            var inventario = await _context.Inventarios.FirstOrDefaultAsync(i => i.ProductoId == productoId);
+            var inventario = await _context.Inventarios
+                .FirstOrDefaultAsync(i => i.ProductoId == dto.ProductoId && i.EsActivo);
+
+            if (inventario == null) return false;
+
+            inventario.Cantidad = dto.Cantidad;
+            inventario.FechaActualizacion = DateTime.UtcNow;
+
+            _context.Inventarios.Update(inventario);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<InventarioDto?> ObtenerInventarioPorProductoIdAsync(int productoId, bool? esActivo = null)
+        {
+            var query = _context.Inventarios.AsQueryable();
+            if (esActivo.HasValue)
+                query = query.Where(i => i.EsActivo == esActivo.Value);
+
+            var inventario = await query.FirstOrDefaultAsync(i => i.ProductoId == productoId);
             if (inventario == null) return null;
 
             return new InventarioDto
             {
                 ProductoId = inventario.ProductoId,
-                Cantidad = inventario.Cantidad
+                Cantidad = inventario.Cantidad,
+                EsActivo = inventario.EsActivo
             };
         }
 
-        public async Task<List<InventarioDto>> ListarAsync()
+        public async Task<List<InventarioDto>> ListarAsync(bool? esActivo = null)
         {
-            return await _context.Inventarios
-                .GroupBy(i => i.ProductoId)
-                .Select(g => new InventarioDto
-                {
-                    ProductoId = g.Key,
-                    Cantidad = g.Sum(x => x.Cantidad)
-                })
-                .ToListAsync();
+            var query = _context.Inventarios.AsQueryable();
+            if (esActivo.HasValue)
+                query = query.Where(i => i.EsActivo == esActivo.Value);
+
+            return await query.Select(i => new InventarioDto
+            {
+                ProductoId = i.ProductoId,
+                Cantidad = i.Cantidad,
+                EsActivo = i.EsActivo
+            }).ToListAsync();
+        }
+
+        public async Task<bool> InactivarAsync(int productoId)
+        {
+            var inventario = await _context.Inventarios
+                .FirstOrDefaultAsync(i => i.ProductoId == productoId && i.EsActivo);
+
+            if (inventario == null) return false;
+
+            inventario.EsActivo = false;
+            inventario.FechaActualizacion = DateTime.UtcNow;
+
+            _context.Inventarios.Update(inventario);
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<CompraResultadoDto> ProcesarCompraAsync(CompraDto dto)
@@ -73,7 +108,9 @@ namespace Inventario.Infrastructure.Services
             if (producto == null)
                 return new CompraResultadoDto { Exito = false, Mensaje = "Producto no encontrado." };
 
-            var inventario = await _context.Inventarios.FirstOrDefaultAsync(i => i.ProductoId == dto.ProductoId);
+            var inventario = await _context.Inventarios
+                .FirstOrDefaultAsync(i => i.ProductoId == dto.ProductoId && i.EsActivo);
+
             if (inventario == null)
                 return new CompraResultadoDto { Exito = false, Mensaje = "Inventario no encontrado." };
 
@@ -86,6 +123,5 @@ namespace Inventario.Infrastructure.Services
 
             return new CompraResultadoDto { Exito = true, Mensaje = "Compra procesada correctamente." };
         }
-
     }
 }

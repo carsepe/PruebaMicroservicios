@@ -94,17 +94,5 @@ namespace Producto.Infrastructure.Services
             await _context.SaveChangesAsync();
             return true;
         }
-
-
-        public async Task<bool> EliminarAsync(int id)
-        {
-            var producto = await _context.Productos.FirstOrDefaultAsync(p => p.Id == id && p.EsActivo);
-            if (producto == null) return false;
-
-            producto.EsActivo = false;
-            _context.Productos.Update(producto);
-            await _context.SaveChangesAsync();
-            return true;
-        }
     }
 }

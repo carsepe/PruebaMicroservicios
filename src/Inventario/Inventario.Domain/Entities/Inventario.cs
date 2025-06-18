@@ -7,6 +7,8 @@ namespace Inventario.Domain.Entities
         public int ProductoId { get; set; }
         public int Cantidad { get; set; }
         public DateTime FechaActualizacion { get; set; }
+        public bool EsActivo { get; set; } = true;
+
     }
 }
 

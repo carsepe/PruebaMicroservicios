@@ -10,6 +10,8 @@ namespace Inventario.Application.DTOs
     {
         public int ProductoId { get; set; }
         public int Cantidad { get; set; }
+        public bool EsActivo { get; set; }
+
     }
 }
 

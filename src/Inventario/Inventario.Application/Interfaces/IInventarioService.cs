@@ -1,13 +1,14 @@
-﻿
-using Inventario.Application.DTOs;
+﻿using Inventario.Application.DTOs;
 
 namespace Inventario.Application.Interfaces
 {
     public interface IInventarioService
     {
-        Task<int> CrearInventarioAsync(InventarioDto dto);
-        Task<InventarioDto?> ObtenerInventarioPorProductoIdAsync(int productoId);
-        Task<List<InventarioDto>> ListarAsync();
+        Task<int> CrearAsync(InventarioDto dto);
+        Task<InventarioDto?> ObtenerInventarioPorProductoIdAsync(int productoId, bool? esActivo = null);
+        Task<List<InventarioDto>> ListarAsync(bool? esActivo = null);
+        Task<bool> ActualizarAsync(InventarioDto dto);
+        Task<bool> InactivarAsync(int productoId);
         Task<CompraResultadoDto> ProcesarCompraAsync(CompraDto dto);
     }
 }

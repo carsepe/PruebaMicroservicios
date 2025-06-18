@@ -57,15 +57,5 @@ namespace Producto.API.Controllers
             if (!result) return NotFound();
             return NoContent();
         }
-
-
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Eliminar(int id)
-        {
-            var eliminado = await _productoService.EliminarAsync(id);
-            if (!eliminado) return NotFound();
-            return Ok();
-        }
     }
 }
