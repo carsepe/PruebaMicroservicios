@@ -10,10 +10,11 @@ builder.Services.AddDbContext<InventarioDbContext>(options =>
 builder.Services.AddScoped<IInventarioService, InventarioService>();
 builder.Services.AddScoped<ICompraService, CompraService>();
 
+var productoApiUrl = builder.Configuration["Apis:Producto"];
 
 builder.Services.AddHttpClient<IProductoApiClient, ProductoApiClient>(client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7109"); 
+    client.BaseAddress = new Uri(productoApiUrl!);
 });
 
 builder.Services.AddControllers();
