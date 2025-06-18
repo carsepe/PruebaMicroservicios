@@ -1,11 +1,16 @@
 using Producto.Infrastructure.Data;
+using Producto.Application.Services;
+using Producto.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Agrega el DbContext
+// DbContext
 builder.Services.AddDbContext<ProductoDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Servicios de aplicación
+builder.Services.AddScoped<IProductoService, ProductoService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
