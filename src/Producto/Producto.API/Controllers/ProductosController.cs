@@ -31,5 +31,13 @@ namespace Producto.API.Controllers
 
             return Ok(producto);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Listar()
+        {
+            var productos = await _productoService.ListarAsync();
+            return Ok(productos);
+        }
+
     }
 }

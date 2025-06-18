@@ -44,5 +44,17 @@ namespace Producto.Infrastructure.Services
                 Descripcion = producto.Descripcion
             };
         }
+        public async Task<List<ProductoDto>> ListarAsync()
+        {
+            return await _context.Productos
+                .Select(p => new ProductoDto
+                {
+                    Nombre = p.Nombre,
+                    Precio = p.Precio,
+                    Descripcion = p.Descripcion
+                })
+                .ToListAsync();
+        }
+
     }
 }

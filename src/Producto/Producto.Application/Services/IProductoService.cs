@@ -6,5 +6,7 @@ namespace Producto.Application.Services
     {
         Task<int> CrearProductoAsync(ProductoDto dto);
         Task<ProductoDto?> ObtenerProductoPorIdAsync(int id);
+        Task<List<ProductoDto>> ListarAsync();
+
     }
 }
