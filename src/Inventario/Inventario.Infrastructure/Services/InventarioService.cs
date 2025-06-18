@@ -22,6 +22,9 @@ namespace Inventario.Infrastructure.Services
             if (producto == null)
                 throw new InvalidOperationException("El producto no existe.");
 
+            if (producto.EsActivo == false)
+                throw new InvalidOperationException("No se puede crear inventario para un producto inactivo.");
+
             var existente = await _context.Inventarios
                 .AnyAsync(i => i.ProductoId == dto.ProductoId);
 
@@ -41,12 +44,17 @@ namespace Inventario.Infrastructure.Services
             return inventario.Id;
         }
 
+
         public async Task<bool> ActualizarAsync(InventarioDto dto)
         {
             var inventario = await _context.Inventarios
-                .FirstOrDefaultAsync(i => i.ProductoId == dto.ProductoId && i.EsActivo);
+                .FirstOrDefaultAsync(i => i.ProductoId == dto.ProductoId);
 
-            if (inventario == null) return false;
+            if (inventario == null)
+                throw new InvalidOperationException("El inventario no existe.");
+
+            if (!inventario.EsActivo)
+                throw new InvalidOperationException("No se puede actualizar un inventario inactivo.");
 
             inventario.Cantidad = dto.Cantidad;
             inventario.FechaActualizacion = DateTime.UtcNow;
@@ -55,6 +63,7 @@ namespace Inventario.Infrastructure.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
 
         public async Task<InventarioDto?> ObtenerInventarioPorProductoIdAsync(int productoId, bool? esActivo = null)
         {
@@ -87,20 +96,21 @@ namespace Inventario.Infrastructure.Services
             }).ToListAsync();
         }
 
-        public async Task<bool> InactivarAsync(int productoId)
+        public async Task<bool> ActualizarEstadoAsync(int id, bool esActivo)
         {
-            var inventario = await _context.Inventarios
-                .FirstOrDefaultAsync(i => i.ProductoId == productoId && i.EsActivo);
+            var inventario = await _context.Inventarios.FirstOrDefaultAsync(i => i.Id == id);
+            if (inventario == null)
+                throw new InvalidOperationException("El inventario no existe.");
 
-            if (inventario == null) return false;
+            if (inventario.EsActivo == esActivo)
+                throw new InvalidOperationException($"El inventario ya está {(esActivo ? "activo" : "inactivo")}.");
 
-            inventario.EsActivo = false;
-            inventario.FechaActualizacion = DateTime.UtcNow;
-
-            _context.Inventarios.Update(inventario);
+            inventario.EsActivo = esActivo;
             await _context.SaveChangesAsync();
             return true;
         }
+
+
 
         public async Task<CompraResultadoDto> ProcesarCompraAsync(CompraDto dto)
         {

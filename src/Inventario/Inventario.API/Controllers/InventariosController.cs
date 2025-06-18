@@ -60,12 +60,15 @@ namespace Inventario.API.Controllers
             return NoContent();
         }
 
-        [HttpPatch("{productoId}/inactivar")]
-        public async Task<IActionResult> Inactivar(int productoId)
+        [HttpPatch("{id}/estado")]
+        public async Task<IActionResult> ActualizarEstado(int id, [FromQuery] bool esActivo)
         {
-            var result = await _inventarioService.InactivarAsync(productoId);
-            if (!result) return NotFound();
+            var actualizado = await _inventarioService.ActualizarEstadoAsync(id, esActivo);
+            if (!actualizado)
+                return NotFound();
+
             return NoContent();
         }
+
     }
 }

@@ -50,12 +50,15 @@ namespace Producto.API.Controllers
             return Ok();
         }
 
-        [HttpPatch("{id}/inactivar")]
-        public async Task<IActionResult> Inactivar(int id)
+        [HttpPatch("{id}/estado")]
+        public async Task<IActionResult> ActualizarEstado(int id, [FromQuery] bool esActivo)
         {
-            var result = await _productoService.InactivarAsync(id);
-            if (!result) return NotFound();
+            var actualizado = await _productoService.ActualizarEstadoAsync(id, esActivo);
+            if (!actualizado)
+                return NotFound();
+
             return NoContent();
         }
+
     }
 }

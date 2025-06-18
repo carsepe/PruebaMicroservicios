@@ -8,6 +8,6 @@ namespace Producto.Application.Interfaces
         Task<ProductoDto?> ObtenerPorIdAsync(int id, bool? esActivo = null);
         Task<int> CrearAsync(ProductoDto dto);
         Task<bool> ActualizarAsync(ProductoDto dto);
-        Task<bool> InactivarAsync(int id);
+        Task<bool> ActualizarEstadoAsync(int id, bool esActivo);
     }
 }

@@ -8,7 +8,7 @@ namespace Inventario.Application.Interfaces
         Task<InventarioDto?> ObtenerInventarioPorProductoIdAsync(int productoId, bool? esActivo = null);
         Task<List<InventarioDto>> ListarAsync(bool? esActivo = null);
         Task<bool> ActualizarAsync(InventarioDto dto);
-        Task<bool> InactivarAsync(int productoId);
+        Task<bool> ActualizarEstadoAsync(int id, bool esActivo);
         Task<CompraResultadoDto> ProcesarCompraAsync(CompraDto dto);
     }
 }

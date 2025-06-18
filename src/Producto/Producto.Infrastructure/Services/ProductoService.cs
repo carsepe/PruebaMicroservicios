@@ -72,8 +72,14 @@ namespace Producto.Infrastructure.Services
 
         public async Task<bool> ActualizarAsync(ProductoDto dto)
         {
-            var producto = await _context.Productos.FirstOrDefaultAsync(p => p.Id == dto.Id && p.EsActivo);
-            if (producto == null) return false;
+            var producto = await _context.Productos
+                .FirstOrDefaultAsync(p => p.Id == dto.Id);
+
+            if (producto == null)
+                throw new InvalidOperationException("El producto no existe.");
+
+            if (!producto.EsActivo)
+                throw new InvalidOperationException("No se puede actualizar un producto inactivo.");
 
             producto.Nombre = dto.Nombre;
             producto.Precio = dto.Precio;
@@ -84,15 +90,22 @@ namespace Producto.Infrastructure.Services
             return true;
         }
 
-        public async Task<bool> InactivarAsync(int id)
-        {
-            var producto = await _context.Productos.FirstOrDefaultAsync(p => p.Id == id && p.EsActivo);
-            if (producto == null) return false;
 
-            producto.EsActivo = false;
-            _context.Productos.Update(producto);
+
+        public async Task<bool> ActualizarEstadoAsync(int id, bool esActivo)
+        {
+            var producto = await _context.Productos.FirstOrDefaultAsync(p => p.Id == id);
+            if (producto == null)
+                throw new InvalidOperationException("El producto no existe.");
+
+            if (producto.EsActivo == esActivo)
+                throw new InvalidOperationException($"El producto ya está {(esActivo ? "activo" : "inactivo")}.");
+
+            producto.EsActivo = esActivo;
             await _context.SaveChangesAsync();
             return true;
         }
+
+
     }
 }
