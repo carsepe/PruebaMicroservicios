@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Inventario.Application.DTOs;
 using Inventario.Infrastructure.Services;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace Inventario.Tests.Services
 {
@@ -16,8 +17,23 @@ namespace Inventario.Tests.Services
     {
         private ProductoApiClient CrearClienteConRespuesta(HttpResponseMessage response)
         {
-            var handlerMock = new Mock<HttpMessageHandler>();
+            // Cargar configuración desde appsettings.json si está presente
+            string baseUrl = "https://localhost:7109"; // fallback por defecto
+            try
+            {
+                var configuration = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                    .Build();
 
+                baseUrl = configuration["Apis:Producto"] ?? baseUrl;
+            }
+            catch
+            {
+                // Silenciar errores de configuración para pruebas unitarias
+            }
+
+            var handlerMock = new Mock<HttpMessageHandler>();
             handlerMock
                 .Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync",
@@ -27,7 +43,7 @@ namespace Inventario.Tests.Services
 
             var httpClient = new HttpClient(handlerMock.Object)
             {
-                BaseAddress = new System.Uri("http://localhost")
+                BaseAddress = new Uri(baseUrl)
             };
 
             return new ProductoApiClient(httpClient);
