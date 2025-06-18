@@ -1,5 +1,5 @@
 ﻿using Producto.Application.DTOs;
-using Producto.Application.Services;
+using Producto.Application.Interfaces;
 using ProductoEntity = Producto.Domain.Entities.Producto;
 using Producto.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;

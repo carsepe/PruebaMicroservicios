@@ -1,5 +1,5 @@
 ﻿using Inventario.Application.DTOs;
-using Inventario.Application.Services;
+using Inventario.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Inventario.API.Controllers
@@ -36,5 +36,20 @@ namespace Inventario.API.Controllers
             var inventarios = await _inventarioService.ListarAsync();
             return Ok(inventarios);
         }
+
+        [HttpPost("comprar")]
+        public async Task<IActionResult> Comprar([FromBody] CompraDto dto)
+        {
+            var resultado = await _inventarioService.ProcesarCompraAsync(dto);
+            return Ok(new
+            {
+                data = new
+                {
+                    type = "compra",
+                    attributes = resultado
+                }
+            });
+        }
+
     }
 }

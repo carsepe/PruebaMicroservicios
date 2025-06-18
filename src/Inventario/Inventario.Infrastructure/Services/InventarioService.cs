@@ -1,5 +1,5 @@
 ﻿using Inventario.Application.DTOs;
-using Inventario.Application.Services;
+using Inventario.Application.Interfaces;
 using InventarioEntity = Inventario.Domain.Entities.Inventario;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,10 +8,13 @@ namespace Inventario.Infrastructure.Services
     public class InventarioService : IInventarioService
     {
         private readonly InventarioDbContext _context;
+        private readonly IProductoApiClient _productoApi;
 
-        public InventarioService(InventarioDbContext context)
+
+        public InventarioService(InventarioDbContext context, IProductoApiClient productoApi)
         {
             _context = context;
+            _productoApi = productoApi;
         }
 
         public async Task<int> CrearInventarioAsync(InventarioDto dto)
@@ -50,5 +53,26 @@ namespace Inventario.Infrastructure.Services
                 })
                 .ToListAsync();
         }
+
+        public async Task<CompraResultadoDto> ProcesarCompraAsync(CompraDto dto)
+        {
+            var producto = await _productoApi.ObtenerProductoPorIdAsync(dto.ProductoId);
+            if (producto == null)
+                return new CompraResultadoDto { Exito = false, Mensaje = "Producto no encontrado." };
+
+            var inventario = await _context.Inventarios.FirstOrDefaultAsync(i => i.ProductoId == dto.ProductoId);
+            if (inventario == null)
+                return new CompraResultadoDto { Exito = false, Mensaje = "Inventario no encontrado." };
+
+            if (inventario.Cantidad < dto.Cantidad)
+                return new CompraResultadoDto { Exito = false, Mensaje = "Stock insuficiente." };
+
+            inventario.Cantidad -= dto.Cantidad;
+            inventario.FechaActualizacion = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            return new CompraResultadoDto { Exito = true, Mensaje = "Compra procesada correctamente." };
+        }
+
     }
 }

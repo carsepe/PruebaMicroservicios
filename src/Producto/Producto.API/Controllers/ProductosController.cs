@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Producto.Application.DTOs;
-using Producto.Application.Services;
+using Producto.Application.Interfaces;
 
 namespace Producto.API.Controllers
 {

@@ -1,7 +1,7 @@
 using Producto.Infrastructure.Data;
-using Producto.Application.Services;
-using Producto.Infrastructure.Services;
+using Producto.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Producto.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

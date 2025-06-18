@@ -1,4 +1,4 @@
-using Inventario.Application.Services;
+using Inventario.Application.Interfaces;
 using Inventario.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +8,11 @@ builder.Services.AddDbContext<InventarioDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IInventarioService, InventarioService>();
+
+builder.Services.AddHttpClient<IProductoApiClient, ProductoApiClient>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7109"); 
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
