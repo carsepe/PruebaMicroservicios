@@ -8,7 +8,7 @@
 - **XUnit + Moq**
 - **Swagger**
 - **GitHub CLI**
-- **Herramientas de IA**: ChatGPT para apoyo en validaciones, pruebas, errores comunes y estructura del proyecto.
+- **Herramientas de IA**: ChatGPT para apoyo en validaciones, pruebas, errores comunes, generación de documentación y mejora de calidad del código.
 
 ---
 
@@ -32,6 +32,12 @@ docker-compose up --build
 - Producto: [http://localhost:5000/swagger](http://localhost:5000/swagger)
 - Inventario: [http://localhost:5001/swagger](http://localhost:5001/swagger)
 
+**⚠️ Importante:** Para que Inventario pueda consumir Producto, se debe incluir el header:
+
+```http
+X-API-KEY: pruebamicroservicios-KEY-2025-123456789
+```
+
 ---
 
 ## 🧱 Arquitectura
@@ -39,7 +45,7 @@ docker-compose up --build
 Se utilizaron dos microservicios independientes:
 
 - **Producto**: CRUD completo con validación de nombre único.
-- **Inventario**: Gestión de stock y proceso de compra con validaciones.
+- **Inventario**: Gestión de stock, proceso de compra y consulta de compras históricas.
 
 Cada uno tiene la estructura:
 
@@ -56,8 +62,10 @@ Cada uno tiene la estructura:
 - **SQLite**: Base de datos ligera para facilitar despliegue local.
 - **Compra en Inventario**: Por principios DDD, se valida y actualiza el stock ahí mismo.
 - **Comunicación HTTP**: El microservicio de Inventario consume Producto vía HttpClient.
+- **Autenticación básica**: API key en encabezado HTTP (`X-API-KEY`) entre microservicios.
 - **Eliminación lógica**: Mediante campo `EsActivo`.
 - **Respuestas JSON:API**: Estandarizadas para todos los errores.
+- **Resiliencia**: Manejo de timeout y reintentos con Polly.
 
 ---
 
@@ -73,8 +81,30 @@ Cada uno tiene la estructura:
 [Verifica existencia y stock]     [Verifica si producto existe y está activo]
      |
      v
-[Actualiza stock y responde en formato JSON:API]
+[Actualiza stock, guarda histórico y responde en formato JSON:API]
 ```
+
+---
+
+## 📂 Endpoints principales
+
+### Producto API
+
+- `GET /productos`
+- `GET /productos/{id}`
+- `POST /productos`
+- `PUT /productos/{id}`
+- `PATCH /productos/{id}/estado`
+
+### Inventario API
+
+- `GET /inventarios`
+- `GET /inventarios/{productoId}`
+- `POST /inventarios`
+- `PUT /inventarios`
+- `PATCH /inventarios/{id}/estado`
+- `POST /compras`
+- `GET /compras/historico` ✅
 
 ---
 
@@ -86,6 +116,7 @@ Cada uno tiene la estructura:
 - **Integración**:
   - Compra real entre servicios.
   - Validación de errores personalizados.
+  - Guardado de histórico en compras.
 - **Cobertura completa de casos positivos y negativos.**
 
 ---
@@ -96,16 +127,17 @@ Se utilizó **ChatGPT** para:
 
 - Generar controladores y servicios con buenas prácticas.
 - Aplicar formato de errores JSON:API.
-- Generar validaciones de negocio.
 - Crear pruebas unitarias e integración.
-- Optimizar contenido del `README.md`.
+- Agilizar documentación técnica.
+- Diseñar diagramas de arquitectura y comunicación entre servicios.
+- Mejorar estructura y legibilidad del código.
 
 ---
 
 ## 📌 Consideraciones finales
 
 - Proyecto dockerizado y funcional en local.
-- Todo el flujo de compra implementado, probado y validado.
+- Flujo de compra implementado, probado y validado.
 - Microservicios separados, comunicados por HTTP.
 - Validaciones claras, errores personalizados y pruebas completas.
-- Se cumplieron todos los puntos exigidos en la prueba para nivel **semi senior**.
+- Seguridad básica entre servicios vía `X-API-KEY`.
