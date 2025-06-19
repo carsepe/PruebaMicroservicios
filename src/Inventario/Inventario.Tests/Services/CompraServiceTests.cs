@@ -65,7 +65,7 @@ namespace Inventario.Tests.Services
             var resultado = await _service.ProcesarCompraAsync(dto);
 
             Assert.False(resultado.Exito);
-            Assert.Equal("Producto no encontrado.", resultado.Mensaje);
+            Assert.Equal("Producto no encontrado o no disponible actualmente.", resultado.Mensaje);
         }
 
         [Fact]
@@ -80,7 +80,7 @@ namespace Inventario.Tests.Services
             var resultado = await _service.ProcesarCompraAsync(dto);
 
             Assert.False(resultado.Exito);
-            Assert.Equal("Inventario no encontrado.", resultado.Mensaje);
+            Assert.Equal("El producto aún no tiene inventario asignado.", resultado.Mensaje);
         }
 
         [Fact]
@@ -104,7 +104,7 @@ namespace Inventario.Tests.Services
             var resultado = await _service.ProcesarCompraAsync(dto);
 
             Assert.False(resultado.Exito);
-            Assert.Equal("Inventario no encontrado.", resultado.Mensaje);
+            Assert.Equal("El producto aún no tiene inventario asignado.", resultado.Mensaje);
         }
 
         [Fact]
@@ -128,7 +128,7 @@ namespace Inventario.Tests.Services
             var resultado = await _service.ProcesarCompraAsync(dto);
 
             Assert.False(resultado.Exito);
-            Assert.Equal("Stock insuficiente.", resultado.Mensaje);
+            Assert.Equal("Stock insuficiente. Disponible: 2", resultado.Mensaje);
         }
     }
 }

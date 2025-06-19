@@ -35,25 +35,8 @@ namespace Producto.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Crear([FromBody] ProductoDto dto)
         {
-            try
-            {
-                var id = await _productoService.CrearAsync(dto);
-                return Ok(new { id });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new
-                {
-                    errors = new[]
-                    {
-                new {
-                    status = "400",
-                    title = "Validación de negocio",
-                    detail = ex.Message
-                }
-            }
-                });
-            }
+            var id = await _productoService.CrearAsync(dto);
+            return Ok(new { id });
         }
 
 

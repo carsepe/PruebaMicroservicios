@@ -33,23 +33,8 @@ namespace Inventario.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Crear([FromBody] InventarioDto dto)
         {
-            try
-            {
-                var id = await _inventarioService.CrearAsync(dto);
-                return Ok(new { id });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    error = "Ocurrió un error inesperado.",
-                    detalle = ex.Message
-                });
-            }
+            var id = await _inventarioService.CrearAsync(dto);
+            return Ok(new { id });
         }
 
         [HttpPut]
@@ -64,11 +49,8 @@ namespace Inventario.API.Controllers
         public async Task<IActionResult> ActualizarEstado(int id, [FromQuery] bool esActivo)
         {
             var actualizado = await _inventarioService.ActualizarEstadoAsync(id, esActivo);
-            if (!actualizado)
-                return NotFound();
-
+            if (!actualizado) return NotFound();
             return NoContent();
         }
-
     }
 }

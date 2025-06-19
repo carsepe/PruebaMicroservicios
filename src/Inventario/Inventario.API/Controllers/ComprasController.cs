@@ -18,55 +18,21 @@ namespace Inventario.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Comprar([FromBody] CompraDto dto)
         {
-            try
-            {
-                var resultado = await _compraService.ProcesarCompraAsync(dto);
+            var resultado = await _compraService.ProcesarCompraAsync(dto);
 
-                if (!resultado.Exito)
+            return Ok(new
+            {
+                data = new
                 {
-                    return BadRequest(new
+                    type = "compras",
+                    id = Guid.NewGuid().ToString(),
+                    attributes = new
                     {
-                        errors = new[]
-                        {
-                            new
-                            {
-                                status = "400",
-                                title = "Compra no válida",
-                                detail = resultado.Mensaje
-                            }
-                        }
-                    });
+                        exito = resultado.Exito,
+                        mensaje = resultado.Mensaje
+                    }
                 }
-
-                return Ok(new
-                {
-                    data = new
-                    {
-                        type = "compras",
-                        id = Guid.NewGuid().ToString(),
-                        attributes = new
-                        {
-                            exito = resultado.Exito,
-                            mensaje = resultado.Mensaje
-                        }
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    errors = new[]
-                    {
-                        new
-                        {
-                            status = "500",
-                            title = "Error interno",
-                            detail = ex.Message
-                        }
-                    }
-                });
-            }
+            });
         }
     }
 }

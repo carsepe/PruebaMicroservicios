@@ -1,3 +1,4 @@
+using Inventario.API.Common.Middleware;
 using Inventario.Application.Interfaces;
 using Inventario.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +32,8 @@ using (var scope = app.Services.CreateScope())
 
 app.UseSwagger();
 app.UseSwaggerUI();
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseAuthorization();
 app.MapControllers();

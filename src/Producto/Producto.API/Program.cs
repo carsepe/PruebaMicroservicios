@@ -2,6 +2,7 @@ using Producto.Infrastructure.Data;
 using Producto.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Producto.Infrastructure.Services;
+using Producto.API.Common.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,8 @@ using (var scope = app.Services.CreateScope())
 
 app.UseSwagger();
 app.UseSwaggerUI();
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseAuthorization();
 app.MapControllers();
