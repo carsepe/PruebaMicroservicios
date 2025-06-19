@@ -28,3 +28,5 @@ El flujo de compra se encuentra en el microservicio de **Inventario** por las si
 
 ```bash
 docker-compose up --build
+
+prueba
