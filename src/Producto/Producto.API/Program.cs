@@ -18,13 +18,6 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Ejecutar migraciones automáticamente
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<ProductoDbContext>();
-    context.Database.Migrate();
-}
-
 app.UseSwagger();
 app.UseSwaggerUI();
 

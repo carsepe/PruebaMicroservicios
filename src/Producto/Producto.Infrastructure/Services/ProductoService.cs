@@ -17,17 +17,9 @@ namespace Producto.Infrastructure.Services
 
         public async Task<int> CrearAsync(ProductoDto dto)
         {
-            var nombreNormalizado = dto.Nombre.Trim().ToLower();
-
-            var existe = await _context.Productos
-                .AnyAsync(p => p.Nombre.ToLower() == nombreNormalizado);
-
-            if (existe)
-                throw new InvalidOperationException("Ya existe un producto con el mismo nombre.");
-
             var producto = new ProductoEntity
             {
-                Nombre = dto.Nombre.Trim(),
+                Nombre = dto.Nombre,
                 Precio = dto.Precio,
                 Descripcion = dto.Descripcion
             };
@@ -36,7 +28,6 @@ namespace Producto.Infrastructure.Services
             await _context.SaveChangesAsync();
             return producto.Id;
         }
-
         public async Task<List<ProductoDto>> ListarAsync(bool? esActivo = null)
         {
             var query = _context.Productos.AsQueryable();
