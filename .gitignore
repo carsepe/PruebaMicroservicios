@@ -13,6 +13,9 @@ TestResults/
 *.db
 *.db-shm
 *.db-wal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
 
 # Environment files
 .env
@@ -22,7 +25,7 @@ TestResults/
 *.tar
 docker-compose.override.yml
 
-# IDEs
+# IDEs and metadata
 .vscode/
 .idea/
 *.sw?
@@ -34,4 +37,6 @@ Thumbs.db
 # Large files
 PruebaMicroservicios.zip
 
+# Visual Studio cache
 .vs/
+!.vs/DocumentLayout.json
