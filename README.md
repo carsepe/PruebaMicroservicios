@@ -32,7 +32,8 @@ docker-compose up --build
 - Producto: [http://localhost:5000/swagger](http://localhost:5000/swagger)
 - Inventario: [http://localhost:5001/swagger](http://localhost:5001/swagger)
 
-**⚠️ Importante:** Para que Inventario pueda consumir Producto, se debe incluir el header:
+**⚠️ Importante:** Importante: Tanto Producto como Inventario están protegidos mediante autenticación básica por API Key.
+Por lo tanto, es obligatorio incluir el siguiente encabezado en todas las solicitudes hacia cualquiera de los dos microservicios:
 
 ```http
 X-API-KEY: pruebamicroservicios-KEY-2025-123456789
@@ -104,7 +105,7 @@ Cada uno tiene la estructura:
 - `PUT /inventarios`
 - `PATCH /inventarios/{id}/estado`
 - `POST /compras`
-- `GET /compras/historico` ✅
+- `GET /compras/historico` 
 
 ---
 
