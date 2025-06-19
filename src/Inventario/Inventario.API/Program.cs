@@ -23,6 +23,12 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<InventarioDbContext>();
+    context.Database.Migrate();
+}
+
 app.UseSwagger();
 app.UseSwaggerUI();
 

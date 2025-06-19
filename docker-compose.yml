@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: src/Producto/Producto.API/Dockerfile
     ports:
-      - "5000:8080"
+      - "5100:8080"  # Cambiado de 5000
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     networks:
@@ -17,7 +17,7 @@ services:
       context: .
       dockerfile: src/Inventario/Inventario.API/Dockerfile
     ports:
-      - "5001:8080"
+      - "5101:8080"  # Cambiado de 5001
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     networks:
