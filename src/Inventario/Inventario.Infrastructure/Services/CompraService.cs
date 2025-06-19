@@ -1,5 +1,6 @@
 ﻿using Inventario.Application.DTOs;
 using Inventario.Application.Interfaces;
+using Inventario.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -24,7 +25,6 @@ namespace Inventario.Infrastructure.Services
         {
             try
             {
-                // ✅ Validación de cantidad
                 if (dto.Cantidad <= 0)
                 {
                     return new CompraResultadoDto
@@ -68,6 +68,16 @@ namespace Inventario.Infrastructure.Services
 
                 inventario.Cantidad -= dto.Cantidad;
                 inventario.FechaActualizacion = DateTime.UtcNow;
+
+                //Guardar en histórico
+                _context.ComprasHistorico.Add(new CompraHistorico
+                {
+                    ProductoId = dto.ProductoId,
+                    Cantidad = dto.Cantidad,
+                    FechaCompra = DateTime.UtcNow,
+                    Origen = "api"
+                });
+
                 await _context.SaveChangesAsync();
 
                 return new CompraResultadoDto
@@ -93,6 +103,37 @@ namespace Inventario.Infrastructure.Services
                 };
             }
         }
+
+
+        public async Task<List<CompraHistoricoDto>> ListarHistoricoAsync(int? productoId, DateTime? fechaInicio, DateTime? fechaFin, string? origen)
+        {
+            var query = _context.ComprasHistorico.AsQueryable();
+
+            if (productoId.HasValue)
+                query = query.Where(h => h.ProductoId == productoId.Value);
+
+            if (fechaInicio.HasValue)
+                query = query.Where(h => h.FechaCompra >= fechaInicio.Value);
+
+            if (fechaFin.HasValue)
+                query = query.Where(h => h.FechaCompra <= fechaFin.Value);
+
+            if (!string.IsNullOrWhiteSpace(origen))
+                query = query.Where(h => h.Origen == origen);
+
+            return await query
+                .OrderByDescending(h => h.FechaCompra)
+                .Select(h => new CompraHistoricoDto
+                {
+                    Id = h.Id,
+                    ProductoId = h.ProductoId,
+                    Cantidad = h.Cantidad,
+                    FechaCompra = h.FechaCompra,
+                    Origen = h.Origen
+                })
+                .ToListAsync();
+        }
+
 
     }
 

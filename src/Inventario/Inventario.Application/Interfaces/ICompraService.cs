@@ -10,6 +10,8 @@ namespace Inventario.Application.Interfaces
     public interface ICompraService
     {
         Task<CompraResultadoDto> ProcesarCompraAsync(CompraDto dto);
+        Task<List<CompraHistoricoDto>> ListarHistoricoAsync(int? productoId, DateTime? fechaInicio, DateTime? fechaFin, string? origen);
+
     }
 
 }

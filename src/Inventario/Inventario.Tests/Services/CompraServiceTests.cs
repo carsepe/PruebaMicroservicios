@@ -130,5 +130,34 @@ namespace Inventario.Tests.Services
             Assert.False(resultado.Exito);
             Assert.Equal("Stock insuficiente. Disponible: 2", resultado.Mensaje);
         }
+
+        [Fact]
+        public async Task ProcesarCompra_DeberiaGuardarHistorico_CuandoCompraEsExitosa()
+        {
+            var productoId = 5;
+
+            _productoApiMock.Setup(p => p.ObtenerProductoPorIdAsync(productoId))
+                .ReturnsAsync(new ProductoDto { Id = productoId, EsActivo = true });
+
+            await _dbContext.Inventarios.AddAsync(new InventarioEntity
+            {
+                ProductoId = productoId,
+                Cantidad = 10,
+                EsActivo = true,
+                FechaActualizacion = DateTime.UtcNow
+            });
+            await _dbContext.SaveChangesAsync();
+
+            var dto = new CompraDto { ProductoId = productoId, Cantidad = 2 };
+            var resultado = await _service.ProcesarCompraAsync(dto);
+
+            var historico = await _dbContext.ComprasHistorico.FirstOrDefaultAsync(h => h.ProductoId == productoId);
+
+            Assert.True(resultado.Exito);
+            Assert.NotNull(historico);
+            Assert.Equal(dto.Cantidad, historico.Cantidad);
+            Assert.Equal("api", historico.Origen);
+        }
+
     }
 }

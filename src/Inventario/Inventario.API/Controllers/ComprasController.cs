@@ -24,7 +24,6 @@ namespace Inventario.API.Controllers
         /// <param name="dto">Objeto que contiene el ID del producto y la cantidad a comprar.</param>
         /// <returns>Un resultado en formato JSON:API indicando si la compra fue exitosa.</returns>
         /// <response code="200">Compra procesada correctamente</response>
-        /// <response code="400">Error de validación o stock insuficiente</response>
         [HttpPost]
         public async Task<IActionResult> Comprar([FromBody] CompraDto dto)
         {
@@ -44,5 +43,25 @@ namespace Inventario.API.Controllers
                 }
             });
         }
+
+        /// <summary>
+        /// Lista el historial de compras con filtros opcionales.
+        /// </summary>
+        [HttpGet("historico")]
+        public async Task<IActionResult> ObtenerHistorico([FromQuery] int? productoId, [FromQuery] DateTime? fechaInicio, [FromQuery] DateTime? fechaFin, [FromQuery] string? origen)
+        {
+            var lista = await _compraService.ListarHistoricoAsync(productoId, fechaInicio, fechaFin, origen);
+
+            return Ok(new
+            {
+                data = lista.Select(item => new
+                {
+                    type = "compraHistorico",
+                    id = item.Id,
+                    attributes = item
+                })
+            });
+        }
+
     }
 }
